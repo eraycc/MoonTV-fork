@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import Script from 'next/script'; // Add this import
+import Script from 'next/script';
 import '../lib/cron';
 
 import './globals.css';
@@ -12,6 +12,13 @@ import { SiteProvider } from '../components/SiteProvider';
 import { ThemeProvider } from '../components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
+
+// Extend the Location interface to include your custom property
+declare global {
+  interface Location {
+    'm3u8去插播广告'?: any;
+  }
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = getConfig();
@@ -58,7 +65,7 @@ export default function RootLayout({
           strategy="afterInteractive"
           onLoad={() => {
             console.log('远程脚本加载成功');
-            if (typeof location['m3u8去插播广告'] !== 'undefined') {
+            if (typeof (location as any)['m3u8去插播广告'] !== 'undefined') {
               console.log('m3u8adfilter 功能已生效');
             } else {
               console.warn('远程脚本加载但未生效，回退本地脚本');
@@ -66,7 +73,7 @@ export default function RootLayout({
               fallbackScript.src = './m3u8adfilter.js?ver=1.0';
               fallbackScript.onload = () => {
                 console.log('本地脚本加载成功');
-                if (typeof location['m3u8去插播广告'] !== 'undefined') {
+                if (typeof (location as any)['m3u8去插播广告'] !== 'undefined') {
                   console.log('m3u8adfilter 本地功能生效');
                 } else {
                   console.error('本地脚本也未生效');
@@ -82,7 +89,7 @@ export default function RootLayout({
             fallbackScript.src = './m3u8adfilter.js?ver=1.0';
             fallbackScript.onload = () => {
               console.log('本地脚本加载成功');
-              if (typeof location['m3u8去插播广告'] !== 'undefined') {
+              if (typeof (location as any)['m3u8去插播广告'] !== 'undefined') {
                 console.log('m3u8adfilter 本地功能生效');
               } else {
                 console.error('本地脚本也未生效');
