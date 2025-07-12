@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import Script from 'next/script';
 import '../lib/cron';
 
 import './globals.css';
@@ -13,10 +12,10 @@ import { ThemeProvider } from '../components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// Extend the Location interface to include your custom property
+// 在模块内部声明类型扩展
 declare global {
   interface Location {
-    'm3u8去插播广告'?: any;
+    'm3u8去插播广告'?: boolean;
   }
 }
 
@@ -52,57 +51,62 @@ export default function RootLayout({
   return (
     <html lang='zh-CN' suppressHydrationWarning>
       <head>
+        {/* 运行时配置 */}
         <script
           dangerouslySetInnerHTML={{
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
         
+        {/* 预加载远程脚本 */}
         <link rel="preload" as="script" href="https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js" />
         
-        <Script 
-          src="https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js"
-          strategy="afterInteractive"
-          onLoad={() => {
-            console.log('远程脚本加载成功');
-            if (typeof (location as any)['m3u8去插播广告'] !== 'undefined') {
-              console.log('m3u8adfilter 功能已生效');
-            } else {
-              console.warn('远程脚本加载但未生效，回退本地脚本');
-              const fallbackScript = document.createElement('script');
-              fallbackScript.src = './m3u8adfilter.js?ver=1.0';
-              fallbackScript.onload = () => {
-                console.log('本地脚本加载成功');
-                if (typeof (location as any)['m3u8去插播广告'] !== 'undefined') {
-                  console.log('m3u8adfilter 本地功能生效');
-                } else {
-                  console.error('本地脚本也未生效');
+        {/* 远程脚本 */}
+        <script 
+          src="https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js" 
+          defer 
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function onRemoteScriptLoaded() {
+                  console.log('远程脚本加载成功');
+                  if (typeof location['m3u8去插播广告'] !== 'undefined') {
+                    console.log('m3u8adfilter 功能已生效');
+                  } else {
+                    console.warn('远程脚本加载但未生效，回退本地脚本');
+                    fallbackToLocalScript();
+                  }
                 }
-              };
-              fallbackScript.onerror = () => console.error('本地脚本加载失败');
-              document.head.appendChild(fallbackScript);
-            }
-          }}
-          onError={() => {
-            console.log('尝试加载本地脚本...');
-            const fallbackScript = document.createElement('script');
-            fallbackScript.src = './m3u8adfilter.js?ver=1.0';
-            fallbackScript.onload = () => {
-              console.log('本地脚本加载成功');
-              if (typeof (location as any)['m3u8去插播广告'] !== 'undefined') {
-                console.log('m3u8adfilter 本地功能生效');
-              } else {
-                console.error('本地脚本也未生效');
-              }
-            };
-            fallbackScript.onerror = () => console.error('本地脚本加载失败');
-            document.head.appendChild(fallbackScript);
+                
+                function fallbackToLocalScript() {
+                  console.log('尝试加载本地脚本...');
+                  const script = document.createElement('script');
+                  script.src = 'https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js';
+                  script.onload = function() {
+                    console.log('本地脚本加载成功');
+                    if (typeof location['m3u8去插播广告'] !== 'undefined') {
+                      console.log('m3u8adfilter 本地功能生效');
+                    } else {
+                      console.error('本地脚本也未生效');
+                    }
+                  };
+                  script.onerror = function() {
+                    console.error('本地脚本加载失败');
+                  };
+                  document.head.appendChild(script);
+                }
+                
+                // 设置当前脚本的事件处理器
+                var currentScript = document.currentScript || 
+                  document.querySelector('script[src="https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js"]');
+                currentScript.onload = onRemoteScriptLoaded;
+                currentScript.onerror = fallbackToLocalScript;
+              })();
+            `
           }}
         />
       </head>
-      <body
-        className={`${inter.className} min-h-screen bg-white text-gray-900 dark:bg-black dark:text-gray-200`}
-      >
+      <body className={`${inter.className} min-h-screen bg-white text-gray-900 dark:bg-black dark:text-gray-200`}>
         <ThemeProvider
           attribute='class'
           defaultTheme='system'
