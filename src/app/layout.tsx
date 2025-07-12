@@ -53,6 +53,35 @@ export default function RootLayout({
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
+    <link rel="preload" as="script" href="https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js">
+    <script src="https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js" defer onload="onRemoteScriptLoaded()" onerror="fallbackToLocalScript()"></script>
+    <script defer>
+        function onRemoteScriptLoaded() {
+          console.log('远程脚本加载成功');
+          if (typeof location['m3u8去插播广告'] !== 'undefined') {
+            console.log('m3u8adfilter 功能已生效');
+          } else {
+            console.warn('远程脚本加载但未生效，回退本地脚本');
+            fallbackToLocalScript();
+          }
+        }
+        
+        function fallbackToLocalScript() {
+          console.log('尝试加载本地脚本...');
+          const script = document.createElement('script');
+          script.src = './m3u8adfilter.js?ver=1.0';
+          script.onload = () => {
+            console.log('本地脚本加载成功');
+            if (typeof location['m3u8去插播广告'] !== 'undefined') {
+              console.log('m3u8adfilter 本地功能生效');
+            } else {
+              console.error('本地脚本也未生效');
+            }
+          };
+          script.onerror = () => console.error('本地脚本加载失败');
+          document.head.appendChild(script);
+        }
+    </script>
       </head>
       <body
         className={`${inter.className} min-h-screen bg-white text-gray-900 dark:bg-black dark:text-gray-200`}
