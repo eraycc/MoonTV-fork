@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script'; // Add this import
 import '../lib/cron';
 
 import './globals.css';
@@ -12,7 +13,6 @@ import { ThemeProvider } from '../components/ThemeProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
-// 动态生成 metadata，支持配置更新后的标题变化
 export async function generateMetadata(): Promise<Metadata> {
   const config = getConfig();
 
@@ -36,27 +36,23 @@ export default function RootLayout({
   const siteName = config.SiteConfig.SiteName;
   const announcement = config.SiteConfig.Announcement;
 
-  // 将运行时配置注入到全局 window 对象，供客户端在运行时读取
   const runtimeConfig = {
     STORAGE_TYPE: process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage',
     ENABLE_REGISTER: config.UserConfig.AllowRegister,
     AGGREGATE_SEARCH_RESULT: config.SiteConfig.SearchResultDefaultAggregate,
   };
 
-    return (
+  return (
     <html lang='zh-CN' suppressHydrationWarning>
       <head>
-        {/* Runtime config script */}
         <script
           dangerouslySetInnerHTML={{
             __html: `window.RUNTIME_CONFIG = ${JSON.stringify(runtimeConfig)};`,
           }}
         />
         
-        {/* Preload remote script */}
         <link rel="preload" as="script" href="https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js" />
         
-        {/* Remote script with fallback */}
         <Script 
           src="https://cdn.jsdmirror.cn/gh/963540817/dashu/M3u8.user.js"
           strategy="afterInteractive"
