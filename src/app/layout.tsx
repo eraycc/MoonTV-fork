@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import '../lib/cron';
 
 import './globals.css';
 import 'sweetalert2/dist/sweetalert2.min.css';
@@ -20,7 +19,7 @@ declare global {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = getConfig();
+  const config = await getConfig();
 
   return {
     title: config.SiteConfig.SiteName,
@@ -33,12 +32,12 @@ export const viewport: Viewport = {
   themeColor: '#000000',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const config = getConfig();
+  const config = await getConfig();
   const siteName = config.SiteConfig.SiteName;
   const announcement = config.SiteConfig.Announcement;
 
