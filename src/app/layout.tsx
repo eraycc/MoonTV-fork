@@ -19,10 +19,14 @@ declare global {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const config = await getConfig();
+  let siteName = process.env.SITE_NAME || 'MoonTV';
+  if (process.env.NEXT_PUBLIC_STORAGE_TYPE !== 'd1') {
+    const config = await getConfig();
+    siteName = config.SiteConfig.SiteName;
+  }
 
   return {
-    title: config.SiteConfig.SiteName,
+    title: siteName,
     description: '影视聚合',
     manifest: '/manifest.json',
   };
@@ -37,14 +41,24 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const config = await getConfig();
-  const siteName = config.SiteConfig.SiteName;
-  const announcement = config.SiteConfig.Announcement;
+  let siteName = process.env.SITE_NAME || 'MoonTV';
+  let announcement =
+    process.env.ANNOUNCEMENT ||
+    '本网站仅提供影视信息搜索服务，所有内容均来自第三方网站。本站不存储任何视频资源，不对任何内容的准确性、合法性、完整性负责。';
+  let enableRegister = process.env.NEXT_PUBLIC_ENABLE_REGISTER === 'true';
+  let imageProxy = process.env.NEXT_PUBLIC_IMAGE_PROXY || '';
+  if (process.env.NEXT_PUBLIC_STORAGE_TYPE !== 'd1') {
+    const config = await getConfig();
+    siteName = config.SiteConfig.SiteName;
+    announcement = config.SiteConfig.Announcement;
+    enableRegister = config.UserConfig.AllowRegister;
+    imageProxy = config.SiteConfig.ImageProxy;
+  }
 
   const runtimeConfig = {
     STORAGE_TYPE: process.env.NEXT_PUBLIC_STORAGE_TYPE || 'localstorage',
-    ENABLE_REGISTER: config.UserConfig.AllowRegister,
-    AGGREGATE_SEARCH_RESULT: config.SiteConfig.SearchResultDefaultAggregate,
+    ENABLE_REGISTER: enableRegister,
+    IMAGE_PROXY: imageProxy,
   };
 
   return (
